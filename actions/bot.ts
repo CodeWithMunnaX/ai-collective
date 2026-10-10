@@ -40,7 +40,8 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
       return bot
     })
 
-    revalidatePath("/")
+    // The chat list lives in the dashboard layout's sidebar, so revalidate the layout.
+    revalidatePath("/", "layout")
     return { ok: true, id: bot.id }
   } catch (error) {
     console.error("createBot failed", error)

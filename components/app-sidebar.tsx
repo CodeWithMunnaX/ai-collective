@@ -1,18 +1,59 @@
 import { UserButton } from "@clerk/nextjs"
+import { formatDistanceToNowStrict } from "date-fns"
 
+import { ChatAvatar } from "@/components/chat-avatar"
+import { SidebarCreateMenu } from "@/components/sidebar-create-menu"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { getUserChats } from "@/queries/bots"
 
-export function AppSidebar() {
+export async function AppSidebar() {
+  const chats = await getUserChats()
+
   return (
     <Sidebar>
-      <SidebarContent />
+      <SidebarHeader className="flex-row justify-end">
+        <SidebarCreateMenu />
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Chats</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {chats.map((chat) => (
+                <SidebarMenuItem key={chat.id}>
+                  <SidebarMenuButton size="lg" className="items-center gap-3">
+                    <ChatAvatar seed={chat.avatar} />
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="truncate font-medium">
+                          {chat.title}
+                        </span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {formatDistanceToNowStrict(chat.lastMessageAt)}
+                        </span>
+                      </div>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {chat.preview}
+                      </span>
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>

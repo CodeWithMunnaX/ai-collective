@@ -46,8 +46,18 @@ const emptyValues = (): InsertBot => ({
   avatar: nanoid(),
 })
 
-export function BotDialog({ trigger }: { trigger: ReactElement }) {
-  const [open, setOpen] = useState(false)
+export function BotDialog({
+  trigger,
+  open: openProp,
+  onOpenChange,
+}: {
+  trigger?: ReactElement
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}) {
+  const [openState, setOpenState] = useState(false)
+  const open = openProp ?? openState
+  const setOpen = onOpenChange ?? setOpenState
   const form = useForm<InsertBot>({
     resolver: zodResolver(insertBotSchema),
     defaultValues: emptyValues(),
@@ -70,7 +80,7 @@ export function BotDialog({ trigger }: { trigger: ReactElement }) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={trigger} />
+      {trigger && <DialogTrigger render={trigger} />}
       <DialogContent className="max-w-[min(32rem,calc(100%-2rem))]! gap-5 p-5">
         <DialogHeader>
           <DialogTitle>New bot</DialogTitle>
