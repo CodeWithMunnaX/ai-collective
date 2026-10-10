@@ -7,3 +7,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+# Database: push only, never migrations
+
+Use `npm run db:push` (`drizzle-kit push`) to apply schema changes to the database. Never generate or run migrations (`drizzle-kit generate` / `drizzle-kit migrate`) and never commit a `drizzle/` migrations folder.
+
+# Development project: no backwards compatibility, data is worthless
+
+This is a development project. There is no backwards compatibility and the data is worthless. Prefer data loss: never backfill, migrate, or preserve existing rows, and never spend effort keeping old data working. Every schema change means a clean slate.
