@@ -3,6 +3,7 @@ import { shadcn } from "@clerk/ui/themes"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
+import { SiteHeader } from "@/components/site-header"
 import { ThemeProvider } from "@/components/theme-provider"
 import { DirectionProvider } from "@/components/ui/direction"
 import { Toaster } from "@/components/ui/toast"
@@ -32,7 +33,10 @@ export default function RootLayout({
         <ThemeProvider>
           <DirectionProvider direction="ltr">
             <TooltipProvider>
-              <Toaster>{children}</Toaster>
+              <Toaster>
+                <SiteHeader />
+                {children}
+              </Toaster>
             </TooltipProvider>
           </DirectionProvider>
         </ThemeProvider>
