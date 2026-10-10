@@ -1,0 +1,101 @@
+=== Web Results ===
+
+Digital coworkers: How AI agents are reshaping enterprise teams
+  URL: https://www.datarobot.com/blog/ai-agents-as-digital-coworkers/
+  # Digital coworkers: How AI agents are reshaping enterprise teams
+## How AI agents are shifting from tools to digital coworkers
+Unlike traditional rule-based automation tools, these digital colleagues have the autonomy and awareness to carry out complex tasks without constant human supervision.
+
+## **Frequently asked questions**
+A digital AI agent is an autonomous software system that acts as a coworker by monitoring conditions, making decisions, and coordinating tasks across departments without constant human supervision, unlike traditional chatbots or rule-based automation.
+
+From AI Assistants to Coworkers: The Future of Enterprise Automation
+  URL: https://ttms.com/ai-copilots-vs-ai-coworkers-how-autonomous-agents-are-reshaping-enterprise-strategy-in-2025/
+  Shift from AI copilots (assistive tools) to AI coworkers (autonomous agents) is redefining enterprise operations in 2025.
+
+Coworker AI: Enterprise AI agents for every task
+  URL: https://coworker.ai/
+  Coworker AI is the enterprise AI agent platform. Chat, cowork, and code with the right model for every task, your full company context, and 50+ connectors.
+
+Era of the AI Worker | What is is, Examples, Benefits & Use Cases
+  URL: https://www.blueprism.com/guides/ai/ai-worker/
+  An AI worker is an autonomous software system that owns a business workflow and runs it from request to result. Where a chatbot replies and an AI agent handles
+
+10 Best AI Coworkers in 2026: Reviewed & Compared
+  URL: https://www.vellum.ai/blog/best-ai-coworkers
+  ## Best AI Coworkers (2026)
+### 2. Viktor
+[Viktor](https://getviktor.com/) is a Slack-native AI coworker built on Zeta Labs' autonomous agent infrastructure, with 3,000+ integrations, a persistent cloud computer per workspace, and weeks-long context retention across your team's workflows.
+
+AI Assistant Startups funded by Y Combinator (YC) 2026
+  URL: https://www.ycombinator.com/companies/industry/ai-assistant
+  Sidekick is an AI agent that runs custom manufacturing operations over text. Workers text a problem, photo, video, or voice memo and get an answer from the ...
+
+The Future of Work: Meet Your New Digital Coworker | by Amanatullah
+  URL: https://medium.com/@amanatulla1606/the-future-of-work-meet-your-new-digital-coworker-7b98d3d5ab37
+  A new startup called Newo.ai is taking this a step further by essentially creating artificial digital employees. to build customizable virtual ...
+
+What Is an AI Coworker? The Complete Guide (2026) | Viktor Blog
+  URL: https://viktor.com/blog/what-is-an-ai-coworker
+  ## Key Takeaways
+- An AI coworker is an autonomous AI agent that lives in your existing workspace (Slack or Microsoft Teams), connects to your business tools, and executes real work -- not just answers questions.
+
+## The AI coworker landscape (2026)
+| Player | Where It Lives | Integrations | Primary Strength | Best For |
+|-|-|-|-|-|
+| **Lindy** | Web app (+ email/Slack) | 4,000+ | No-code agent builder for custom workflows | Teams that want to build their own AI agents |
+
+Meet Your New Digital Coworker: AI Agents - LinkedIn
+  URL: https://www.linkedin.com/pulse/meet-your-new-digital-coworker-ai-agents-createbytes-bqjpc
+  AI agents are more than automation — they're strategic collaborators. They don't just respond to commands, they figure out how to get results.
+
+Meet Your New Digital Coworker | Autonomous AI Agents for Smarter ...
+  URL: https://www.pronixinc.com/blog/meet-your-new-digital-coworker-autonomous-ai-agents-for-smarter-workflows
+  Discover how autonomous AI agents are transforming enterprise workflows by automating tasks, enhancing efficiency, and enabling smart ...
+
+=== Alexandria Tools ===
+
+  apollo/companies/search
+    Use to build a list from a shape: size, location, industry, technology. It bills per page, so ask for the page size you need rather than paging through the whole market.
+
+  firecrawl-developer-index/search
+    Find code examples, official documentation, repository discussions or agent skills for a development task.
+
+  builtin-com/jobs/company
+    Read one company profile by returned slug: description, website, logo, source employee count and industries. Headcount is a public source observation; founding year omitted because source metadata is unreliable.
+
+  indeed-com/jobs/employer
+    Employer research after search or job returned an employer key or url. Prefer employer_key (solver-free, one GraphQL call); unknown keys and slugs return not_found.
+
+  cis-scc-virginia-gov/entities/get_entity_agent_history
+    To see past and current registered agents of an entity.
+
+  delaware-gov/entities/registered_agents
+    You need the contact details of a Delaware registered agent named on an entity record, or the full list of agents the Division publishes.
+
+  apollo/companies/enrich
+    Use when you have a domain or LinkedIn company URL and need the company behind it. For a company you can only name, search first.
+
+  ecorp-sos-ga-gov/entities/search_businesses
+    Start here to find an entity's business_id and control number; use `get_business` for the full record.
+
+  fiscal-ai/company/profile
+    Call first when starting from a company name or ticker: it returns every other identifier, so one call here makes the rest of this provider addressable. Also the only place peers and secondary listings are published.
+
+  fiscal-ai/company/list
+    Call to discover what is covered, or to resolve names to identifiers when you do not already have a ticker. Check the per-company dataset list before assuming a costlier capability will answer for it.
+
+  ycombinator-com/companies/batches
+    List every batch label published in the public YC directory with its company count, newest first. Use a returned batch label as the search batch filter.
+
+  ycombinator-com/companies/company
+    Read a public YC company profile: description, batch, location, team size, source-reported status and the founders listed on the profile (name, title, bio, LinkedIn and X/Twitter links).
+
+  ycombinator-com/companies/jobs
+    List public jobs advertised on a YC company profile, including source salary text, location, role and requirements. Each record adds best-effort structured locations, a remote/hybrid/onsite flag and ISO country codes parsed from the location text, plus the source role slug, skills, posting age, apply link and batch. No application or contact actions.
+
+  ycombinator-com/companies/search
+    Browse or search the public YC company directory. Query is optional: omit it to list every company matching the exact source labels for batch (e.g. Summer 2025), industry, region, status and tag, or the hiring, top company and nonprofit flags. Twenty entries per zero-based page, at most fifty pages.
+
+Inspect: firecrawl list <provider> <capability> --pretty
+Use find-tools for tool sets or missing contracts; execute selected tools with scrape --alexandria <provider/capability> --options <json>.

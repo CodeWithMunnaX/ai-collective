@@ -1,3 +1,5 @@
+import { ClerkProvider } from "@clerk/nextjs"
+import { shadcn } from "@clerk/ui/themes"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
@@ -26,6 +28,7 @@ export default function RootLayout({
       className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
     >
       <body>
+        <ClerkProvider appearance={{ theme: shadcn }}>
         <ThemeProvider>
           <DirectionProvider direction="ltr">
             <TooltipProvider>
@@ -33,6 +36,7 @@ export default function RootLayout({
             </TooltipProvider>
           </DirectionProvider>
         </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   )
