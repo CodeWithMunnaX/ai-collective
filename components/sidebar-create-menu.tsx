@@ -22,7 +22,7 @@ export function SidebarCreateMenu() {
           render={
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon"
               aria-label="Create"
               className="aria-expanded:bg-transparent aria-expanded:hover:bg-muted dark:aria-expanded:hover:bg-muted/50"
             />

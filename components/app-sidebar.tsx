@@ -1,8 +1,10 @@
 import { UserButton } from "@clerk/nextjs"
 import { formatDistanceToNowStrict } from "date-fns"
+import Link from "next/link"
 
 import { ChatAvatar } from "@/components/chat-avatar"
 import { SidebarCreateMenu } from "@/components/sidebar-create-menu"
+import { SidebarSearch } from "@/components/sidebar-search"
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +16,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar"
 import { getUserChats } from "@/queries/bots"
 
@@ -21,9 +24,12 @@ export async function AppSidebar() {
   const chats = await getUserChats()
 
   return (
-    <Sidebar>
-      <SidebarHeader className="flex-row justify-end">
-        <SidebarCreateMenu />
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <div className="flex justify-end group-data-[collapsible=icon]:justify-center">
+          <SidebarCreateMenu />
+        </div>
+        <SidebarSearch chats={chats} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -32,9 +38,14 @@ export async function AppSidebar() {
             <SidebarMenu>
               {chats.map((chat) => (
                 <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton size="lg" className="items-center gap-3">
-                    <ChatAvatar seed={chat.avatar} />
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <SidebarMenuButton
+                    size="lg"
+                    tooltip={chat.title}
+                    className="items-center gap-3 group-data-[collapsible=icon]:p-0!"
+                    render={<Link href={`/chats/${chat.id}`} />}
+                  >
+                    <ChatAvatar seed={chat.avatar} className="shrink-0" />
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5 group-data-[collapsible=icon]:hidden">
                       <div className="flex items-baseline justify-between gap-2">
                         <span className="truncate font-medium">
                           {chat.title}
@@ -67,9 +78,9 @@ export async function AppSidebar() {
                     userButtonBox:
                       "w-full! flex-row-reverse! justify-end! gap-2!",
                     userButtonOuterIdentifier:
-                      "m-0! text-sm! text-sidebar-foreground!",
+                      "m-0! text-sm! text-sidebar-foreground! group-data-[collapsible=icon]:hidden!",
                     userButtonTrigger:
-                      "size-full! justify-start! rounded-md! flex! p-2! bg-transparent! hover:bg-transparent! active:bg-transparent! shadow-none! focus-visible:ring-sidebar-ring!",
+                      "size-full! justify-start! rounded-md! flex! p-2! bg-transparent! hover:bg-transparent! active:bg-transparent! shadow-none! focus-visible:ring-sidebar-ring! group-data-[collapsible=icon]:justify-center! group-data-[collapsible=icon]:p-1!",
                     userButtonAvatarBox: "size-6!",
                     userButtonAvatarImage: "size-6!",
                   },
@@ -79,6 +90,7 @@ export async function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   )
 }
