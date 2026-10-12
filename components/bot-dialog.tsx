@@ -1,13 +1,25 @@
 "use client"
 
-import { useState, type ReactElement } from "react"
+import { useEffect, useState, type ReactElement } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { nanoid } from "nanoid"
 import { Controller, useForm } from "react-hook-form"
-import { ShuffleIcon } from "lucide-react"
+import { ShuffleIcon, Trash2Icon } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-import { createBot } from "@/actions/bot"
+import { createBot, deleteBot, updateBot } from "@/actions/bot"
 import { ChatAvatar } from "@/components/chat-avatar"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -46,31 +58,123 @@ const emptyValues = (): InsertBot => ({
   avatar: nanoid(),
 })
 
+function DeleteBotButton({
+  botId,
+  name,
+  onDeleted,
+}: {
+  botId: string
+  name: string
+  onDeleted: () => void
+}) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleDelete() {
+    setPending(true)
+    setError(null)
+    const result = await deleteBot(botId)
+    setPending(false)
+    if (!result.ok) {
+      setError(result.error)
+      return
+    }
+    setOpen(false)
+    onDeleted()
+    // The chat this bot lived in no longer exists.
+    router.replace("/")
+  }
+
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (pending) return
+        setOpen(next)
+        if (!next) setError(null)
+      }}
+    >
+      <AlertDialogTrigger
+        render={
+          <Button type="button" variant="destructive" className="sm:mr-auto" />
+        }
+      >
+        <Trash2Icon data-icon="inline-start" />
+        Delete
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {name}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This permanently deletes the bot and its chats. This can&apos;t be
+            undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            disabled={pending}
+            onClick={handleDelete}
+          >
+            {pending && <Spinner data-icon="inline-start" />}
+            Delete bot
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function BotDialog({
   trigger,
   open: openProp,
   onOpenChange,
+  bot,
 }: {
   trigger?: ReactElement
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  // When given, the dialog edits this bot instead of creating a new one.
+  bot?: InsertBot & { id: string }
 }) {
   const [openState, setOpenState] = useState(false)
   const open = openProp ?? openState
   const setOpen = onOpenChange ?? setOpenState
+  const initialValues = (): InsertBot =>
+    bot
+      ? {
+          name: bot.name,
+          job: bot.job,
+          instruction: bot.instruction ?? "",
+          avatar: bot.avatar,
+        }
+      : emptyValues()
   const form = useForm<InsertBot>({
     resolver: zodResolver(insertBotSchema),
-    defaultValues: emptyValues(),
+    defaultValues: initialValues(),
   })
   const { isSubmitting } = form.formState
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
-    if (!next) form.reset(emptyValues())
+    if (!next) form.reset(initialValues())
   }
 
+  // Edit mode: pick up the saved bot on open (the prop is still stale at the
+  // moment a save closes the dialog).
+  useEffect(() => {
+    if (open && bot) form.reset(initialValues())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
   async function onSubmit(values: InsertBot) {
-    const result = await createBot(values)
+    const result = bot
+      ? await updateBot(bot.id, values)
+      : await createBot(values)
     if (!result.ok) {
       form.setError("root", { message: result.error })
       return
@@ -83,9 +187,11 @@ export function BotDialog({
       {trigger && <DialogTrigger render={trigger} />}
       <DialogContent className="max-w-[min(32rem,calc(100%-2rem))]! gap-5 p-5">
         <DialogHeader>
-          <DialogTitle>New bot</DialogTitle>
+          <DialogTitle>{bot ? "Edit bot" : "New bot"}</DialogTitle>
           <DialogDescription>
-            Give it a face, a name, and a job to do.
+            {bot
+              ? "Change its face, name, or job."
+              : "Give it a face, a name, and a job to do."}
           </DialogDescription>
         </DialogHeader>
 
@@ -210,12 +316,19 @@ export function BotDialog({
         </form>
 
         <DialogFooter className="-mx-5 -mb-5 px-5 py-4">
+          {bot && (
+            <DeleteBotButton
+              botId={bot.id}
+              name={bot.name}
+              onDeleted={() => handleOpenChange(false)}
+            />
+          )}
           <DialogClose render={<Button variant="outline" />}>
             Cancel
           </DialogClose>
           <Button type="submit" form="bot-form" disabled={isSubmitting}>
             {isSubmitting && <Spinner data-icon="inline-start" />}
-            Create bot
+            {bot ? "Save changes" : "Create bot"}
           </Button>
         </DialogFooter>
       </DialogContent>

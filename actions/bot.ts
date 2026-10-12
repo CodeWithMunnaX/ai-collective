@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { auth } from "@clerk/nextjs/server"
+import { and, eq, inArray } from "drizzle-orm"
 
 import { db } from "@/lib/db"
 import { bots, chatMembers, chats, insertBotSchema } from "@/lib/db/schema"
@@ -46,5 +47,90 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
   } catch (error) {
     console.error("createBot failed", error)
     return { ok: false, error: "Couldn't create the bot. Try again." }
+  }
+}
+
+export type DeleteBotResult = { ok: true } | { ok: false; error: string }
+
+export async function deleteBot(botId: unknown): Promise<DeleteBotResult> {
+  const { userId } = await auth()
+  if (!userId) return { ok: false, error: "You need to sign in first." }
+  if (typeof botId !== "string" || !botId) {
+    return { ok: false, error: "Bot not found." }
+  }
+
+  try {
+    const deleted = await db.transaction(async (tx) => {
+      const [bot] = await tx
+        .select({ id: bots.id })
+        .from(bots)
+        .where(and(eq(bots.id, botId), eq(bots.userId, userId)))
+      if (!bot) return false
+
+      // Chats have no foreign key to bots, so remove the bot's direct chats
+      // explicitly; deleting the bot cascades its memberships.
+      const direct = await tx
+        .select({ id: chats.id })
+        .from(chats)
+        .innerJoin(chatMembers, eq(chatMembers.chatId, chats.id))
+        .where(
+          and(
+            eq(chatMembers.botId, botId),
+            eq(chats.userId, userId),
+            eq(chats.kind, "direct")
+          )
+        )
+      if (direct.length > 0) {
+        await tx.delete(chats).where(
+          inArray(
+            chats.id,
+            direct.map((chat) => chat.id)
+          )
+        )
+      }
+      await tx.delete(bots).where(eq(bots.id, botId))
+      return true
+    })
+    if (!deleted) return { ok: false, error: "Bot not found." }
+
+    revalidatePath("/", "layout")
+    return { ok: true }
+  } catch (error) {
+    console.error("deleteBot failed", error)
+    return { ok: false, error: "Couldn't delete the bot. Try again." }
+  }
+}
+
+export type UpdateBotResult ={ ok: true } | { ok: false; error: string }
+
+export async function updateBot(
+  botId: string,
+  input: unknown
+): Promise<UpdateBotResult> {
+  const { userId } = await auth()
+  if (!userId) return { ok: false, error: "You need to sign in first." }
+
+  const parsed = insertBotSchema.safeParse(input)
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid bot.",
+    }
+  }
+
+  const { instruction, ...rest } = parsed.data
+  try {
+    const updated = await db
+      .update(bots)
+      .set({ ...rest, instruction: instruction || null })
+      .where(and(eq(bots.id, botId), eq(bots.userId, userId)))
+      .returning({ id: bots.id })
+    if (updated.length === 0) return { ok: false, error: "Bot not found." }
+
+    revalidatePath("/", "layout")
+    return { ok: true }
+  } catch (error) {
+    console.error("updateBot failed", error)
+    return { ok: false, error: "Couldn't save the bot. Try again." }
   }
 }

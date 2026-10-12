@@ -1,8 +1,7 @@
 import { UserButton } from "@clerk/nextjs"
 import { formatDistanceToNowStrict } from "date-fns"
-import Link from "next/link"
 
-import { ChatAvatar } from "@/components/chat-avatar"
+import { SidebarChatItem } from "@/components/sidebar-chat-item"
 import { SidebarCreateMenu } from "@/components/sidebar-create-menu"
 import { SidebarSearch } from "@/components/sidebar-search"
 import {
@@ -37,29 +36,14 @@ export async function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {chats.map((chat) => (
-                <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton
-                    size="lg"
-                    tooltip={chat.title}
-                    className="items-center gap-3 group-data-[collapsible=icon]:p-0!"
-                    render={<Link href={`/chats/${chat.id}`} />}
-                  >
-                    <ChatAvatar seed={chat.avatar} className="shrink-0" />
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5 group-data-[collapsible=icon]:hidden">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="truncate font-medium">
-                          {chat.title}
-                        </span>
-                        <span className="shrink-0 text-xs text-muted-foreground">
-                          {formatDistanceToNowStrict(chat.lastMessageAt)}
-                        </span>
-                      </div>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {chat.preview}
-                      </span>
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <SidebarChatItem
+                  key={chat.id}
+                  id={chat.id}
+                  title={chat.title}
+                  avatar={chat.avatar}
+                  preview={chat.preview}
+                  lastMessageAgo={formatDistanceToNowStrict(chat.lastMessageAt)}
+                />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
