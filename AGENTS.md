@@ -75,3 +75,8 @@ thing:
 Only JavaScript and the HTTP API have a pre-10 form. The other six cores were
 released in 2026 and never had one, so any older-looking PHP, Python, Rust, Go,
 Dart or C# API attributed to DiceBear is invented rather than outdated.
+# Deployment: Railway env vars
+
+Production runs on Railway (project `ai-teamates`, service `ai-teamates`, environment `production`). When adding or changing env vars, also set them on Railway (use the `use-railway` skill, e.g. `railway variable set --skip-deploys KEY=value`; a push to `main` deploys).
+
+`TRIGGER_SECRET_KEY` is the exception: Trigger.dev needs a **different key for production** than the dev key in `.env.local`. Never copy it from `.env.local` to Railway. The production value is already set on Railway; leave it alone unless the user supplies a new prod key.

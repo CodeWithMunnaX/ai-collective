@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { auth } from "@clerk/nextjs/server"
 import { and, eq, inArray } from "drizzle-orm"
 
+import { createSandbox, deleteSandbox } from "@/lib/daytona"
 import { db } from "@/lib/db"
 import { bots, chatMembers, chats, insertBotSchema } from "@/lib/db/schema"
 
@@ -24,12 +25,22 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
   }
 
   const { instruction, ...rest } = parsed.data
+  let sandboxId: string | undefined
   try {
+    // Every bot owns a sandbox. It is created here but never started or used.
+    sandboxId = await createSandbox()
+    const newSandboxId = sandboxId
+
     // A new bot comes with its own direct chat, created atomically.
     const bot = await db.transaction(async (tx) => {
       const [bot] = await tx
         .insert(bots)
-        .values({ ...rest, instruction: instruction || null, userId })
+        .values({
+          ...rest,
+          instruction: instruction || null,
+          userId,
+          sandboxId: newSandboxId,
+        })
         .returning({ id: bots.id })
 
       const [chat] = await tx
@@ -46,6 +57,12 @@ export async function createBot(input: unknown): Promise<CreateBotResult> {
     return { ok: true, id: bot.id }
   } catch (error) {
     console.error("createBot failed", error)
+    // Don't leave an orphaned sandbox behind when the bot wasn't saved.
+    if (sandboxId) {
+      await deleteSandbox(sandboxId).catch((cleanupError) =>
+        console.error("createBot sandbox cleanup failed", cleanupError)
+      )
+    }
     return { ok: false, error: "Couldn't create the bot. Try again." }
   }
 }
@@ -62,10 +79,10 @@ export async function deleteBot(botId: unknown): Promise<DeleteBotResult> {
   try {
     const deleted = await db.transaction(async (tx) => {
       const [bot] = await tx
-        .select({ id: bots.id })
+        .select({ id: bots.id, sandboxId: bots.sandboxId })
         .from(bots)
         .where(and(eq(bots.id, botId), eq(bots.userId, userId)))
-      if (!bot) return false
+      if (!bot) return null
 
       // Chats have no foreign key to bots, so remove the bot's direct chats
       // explicitly; deleting the bot cascades its memberships.
@@ -89,9 +106,16 @@ export async function deleteBot(botId: unknown): Promise<DeleteBotResult> {
         )
       }
       await tx.delete(bots).where(eq(bots.id, botId))
-      return true
+      return bot
     })
     if (!deleted) return { ok: false, error: "Bot not found." }
+
+    // The bot is gone either way; a failed sandbox delete shouldn't undo that.
+    if (deleted.sandboxId) {
+      await deleteSandbox(deleted.sandboxId).catch((error) =>
+        console.error("deleteBot sandbox delete failed", error)
+      )
+    }
 
     revalidatePath("/", "layout")
     return { ok: true }

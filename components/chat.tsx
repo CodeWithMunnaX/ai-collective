@@ -5,7 +5,7 @@ import {
   useLoadTranscript,
   useTriggerChatTransport,
 } from "@trigger.dev/sdk/chat/react"
-import type { UIMessage } from "ai"
+import { isToolUIPart, type ToolUIPart, type DynamicToolUIPart, type UIMessage } from "ai"
 import { PlusIcon } from "lucide-react"
 
 import {
@@ -25,6 +25,15 @@ import {
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input"
 import { MessageResponse } from "@/components/ai-elements/message"
+import { Image } from "@/components/ai-elements/image"
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+  ToolOutput,
+} from "@/components/ai-elements/tool"
+import type { ViewScreenOutput } from "@/lib/computer-tools"
 import { Bubble, BubbleContent } from "@/components/ui/bubble"
 import { Message, MessageContent } from "@/components/ui/message"
 import {
@@ -35,6 +44,68 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from "@/components/ui/message-scroller"
+
+const toolTitles: Record<string, string> = {
+  bash: "Run command",
+  read_file: "Read file",
+  write_file: "Write file",
+  list_files: "List files",
+  mouse_click: "Click",
+  mouse_move: "Move mouse",
+  mouse_scroll: "Scroll",
+  keyboard_type: "Type",
+  keyboard_press: "Press key",
+  viewscreen: "View screen",
+}
+
+function isScreenshot(output: unknown): output is ViewScreenOutput {
+  return (
+    typeof output === "object" &&
+    output !== null &&
+    "type" in output &&
+    output.type === "screenshot"
+  )
+}
+
+function ToolCall({ part }: { part: ToolUIPart | DynamicToolUIPart }) {
+  const name =
+    part.type === "dynamic-tool" ? part.toolName : part.type.slice("tool-".length)
+  const title = toolTitles[name] ?? name
+  const header =
+    part.type === "dynamic-tool" ? (
+      <ToolHeader
+        title={title}
+        type={part.type}
+        state={part.state}
+        toolName={part.toolName}
+      />
+    ) : (
+      <ToolHeader title={title} type={part.type} state={part.state} />
+    )
+  const output = part.state === "output-available" ? part.output : undefined
+
+  return (
+    <Tool defaultOpen={name === "viewscreen"}>
+      {header}
+      <ToolContent>
+        {name !== "viewscreen" && <ToolInput input={part.input} />}
+        {isScreenshot(output) ? (
+          <Image
+            alt="Screenshot of the sandbox desktop"
+            base64={output.data}
+            mediaType={output.mediaType}
+            uint8Array={new Uint8Array()}
+          />
+        ) : (
+          <ToolOutput
+            output={output}
+            errorText={part.state === "output-error" ? part.errorText : undefined}
+          />
+        )}
+      </ToolContent>
+    </Tool>
+  )
+}
 
 export function Chat({ chatId }: { chatId: string }) {
   const transport = useTriggerChatTransport<typeof aiChat>({
@@ -100,6 +171,8 @@ function ChatView({
                                 <MessageResponse key={i}>
                                   {part.text}
                                 </MessageResponse>
+                              ) : isToolUIPart(part) ? (
+                                <ToolCall key={i} part={part} />
                               ) : null
                             )}
                           </BubbleContent>

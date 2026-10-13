@@ -1,11 +1,16 @@
+"use client"
+
 import { MonitorIcon } from "lucide-react"
 
 import { BotDialog } from "@/components/bot-dialog"
 import { ChatAvatar } from "@/components/chat-avatar"
+import { useToggleDesktopPanel } from "@/components/desktop-panel"
 import { Button } from "@/components/ui/button"
 import type { ChatDetail } from "@/queries/chats"
 
 export function ChatHeader({ title, bot }: Pick<ChatDetail, "title" | "bot">) {
+  const toggleDesktop = useToggleDesktopPanel()
+
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b px-4">
       <BotDialog
@@ -21,8 +26,13 @@ export function ChatHeader({ title, bot }: Pick<ChatDetail, "title" | "bot">) {
           </Button>
         }
       />
-      {/* Placeholder: intentionally does nothing yet. */}
-      <Button type="button" variant="ghost" size="icon" aria-label="Desktop">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label="Toggle desktop"
+        onClick={toggleDesktop}
+      >
         <MonitorIcon />
       </Button>
     </header>

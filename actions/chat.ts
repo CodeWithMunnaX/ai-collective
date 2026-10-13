@@ -3,6 +3,11 @@
 import { auth } from "@trigger.dev/sdk"
 import { chat, defaultStorage } from "@trigger.dev/sdk/ai"
 
+import { asc, eq } from "drizzle-orm"
+
+import { db } from "@/lib/db"
+import { chatMembers } from "@/lib/db/schema"
+import { getDesktopUrl } from "@/lib/daytona"
 import { getChat } from "@/queries/chats"
 
 const start = chat.createStartSessionAction("ai-chat")
@@ -33,4 +38,23 @@ export async function loadTranscript(params: {
 }) {
   await assertOwnsChat(params.chatId)
   return load({ chatId: params.chatId, limit: params.limit })
+}
+
+export async function getChatDesktopUrl(
+  chatId: string
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  try {
+    await assertOwnsChat(chatId)
+    const member = await db.query.chatMembers.findFirst({
+      where: eq(chatMembers.chatId, chatId),
+      orderBy: (m) => asc(m.joinedAt),
+      with: { bot: { columns: { sandboxId: true } } },
+    })
+    const sandboxId = member?.bot.sandboxId
+    if (!sandboxId) return { ok: false, error: "This bot has no desktop." }
+    return { ok: true, url: await getDesktopUrl(sandboxId) }
+  } catch (error) {
+    console.error("getChatDesktopUrl failed", error)
+    return { ok: false, error: "Couldn't start the desktop." }
+  }
 }
